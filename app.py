@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 @app.route('/wiki2008/')
 def hello_world():
-    x = render_template('main.html') # type:str
+    x = render_template('charts.html') # type:str
     return x
 
 
