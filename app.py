@@ -1,4 +1,6 @@
 from flask import Flask, url_for, render_template, request
+from conndb import init_from_db,get_date,get_word
+
 
 app = Flask(__name__)
 
@@ -12,22 +14,31 @@ def hello_world():
 @app.route('/getdata/', methods=['POST'])
 def get_data():
     if request.form['type'] == 'date':
+
+        print('posted:'+request.form['data'])
+        data = get_date(request.form['data'])
+        return data
+    elif request.form['type'] == 'word':
+
+        print('posted:' + request.form['data'])
+        data = get_word(request.form['data'])
+        return data
+
+@app.route('/init/',methods=['POST'])
+def init_data():
+    print(request.args.to_dict())
+    if request.form['type'] == 'date':
         # get top10 access data of the date
         # [[keywd,accesstimes]*10]
         # transfer to json
-        print('posted'+request.form['data'])
-        json = render_template('heatmap.html')
-        return json
-    elif request.form['type'] == 'date2':
+        data = init_from_db('date')
+        return data
+    elif request.form['type'] == 'keywd':
         # get overall access data of this keywd
         # [[date,accesstimes]*366]
         # transfer to json
-        print('posted2'+request.form['data'])
-        json = render_template('heatmap2.html')
-        return json
-
-
-# url_for('static', filename='style.css')
-
+        data = init_from_db('keywd')
+        return data
+    return "hello"
 if __name__ == '__main__':
     app.run()
