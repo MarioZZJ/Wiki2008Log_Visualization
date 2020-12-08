@@ -21,6 +21,7 @@
 
     <!--预定义js-->
 <script>
+    var yeardate = [];
     var cal_option = {
                     tooltip: {
                         position: 'top'
@@ -28,10 +29,14 @@
                     visualMap: {
                         min: 500000,
                         max: 5000000,
-                        calculable: true,
+                        text:['High','Low'],
+                        calculable: false,
                         orient: 'horizontal',
+                        align: 'bottom',
                         left: 'center',
-                        top: 'top'
+                        top: 'top',
+                        itemWidth: 18,
+                        itemHeight: 90
                     },
 
                     calendar: [{
@@ -104,17 +109,64 @@
                     }
                 ]
             };
+    var gau_option = {
+        tooltip: {
+            formatter: '{a} <br/>{b} : {c}%'
+        },
+        toolbox: {
+
+        },
+        series: [
+            {
+                name: '业务指标',
+                type: 'gauge',
+                detail: {
+                    formatter: function (value) {
+                        if(value >= 10000) {
+                            return parseInt(value/1000) + 'M';
+                        }
+                        else{
+                            return value + 'K'
+                        }
+                    },
+                    offsetCenter: ["0", "80%"]
+                },
+                data: [{value: 500, name: 'Access'}],
+                radius:'98%',
+                min: 0,
+                max: 100000,
+                axisLabel: {
+                    show: true,
+                    formatter: function (value) {
+                        if(value >= 1000) {
+                            return value/1000 + 'M';
+                        }
+                        else{
+                            return value + 'K'
+                        }
+                    }
+                }
+            }
+        ],
+
+    };
     function reset(){
         $("#title").html("初始化中。。。")
         $.post(
             "/init/",
             {"type": "date"},
             function (result) {
-                datalist = []
+                var datalist = []
+                var max = 0;
+                var min = 5000000;
                 for(key in result){
                     datalist.push([key,result[key]])
+                    if(result[key]>max){max=result[key]}
+                    else if(result[key]<min){min=result[key]}
                 }
                 window.cal_option['series'][0]['data']=datalist
+                window.cal_option['visualMap']['max'] = max
+                window.cal_option['visualMap']['min'] = min
                 if (window.cal_option && typeof window.cal_option === "object") {
                     calendar.setOption(window.cal_option, true);
                 }
@@ -135,6 +187,7 @@
                     if(i>=15){break;}
                 }
                 window.pie_option['series'][0]['data'] = datalist
+                window.pie_option['title'][0]['text'] = 'Trending Wiki Entry of Year 2008'
                 if (window.pie_option && typeof window.pie_option === "object") {
                     pieChart.setOption(window.pie_option, true);
                 }
@@ -158,6 +211,20 @@
                     $("#title").html("All Year")
                 }
         })
+        $.post(
+            "/init/",
+            {"type": "date"},
+            function (result) {
+                var sum = 0
+                for(key in result){
+                    sum += result[key]
+                }
+                window.gau_option.series[0].data[0].value = parseInt(sum/1000)
+                window.gau_option['series'][0]['max'] = 100000
+                if (window.gau_option && typeof window.gau_option === "object") {
+                    gaugeChart.setOption(window.gau_option, true);
+                }
+            })
 
     }
     function postDate(data) {
@@ -169,13 +236,14 @@
                 datalist = []
                 var result_sorted = Object.keys(result).sort(function(a,b){ return result[b]-result[a]; });
                 var i = 0;
+                var sum = 0;
                 for(key of result_sorted){
                     var datadict = {}
                     datadict['name']=key;
                     datadict['value']=result[key]
-                    datalist.push(datadict)
+                    if(i<15){datalist.push(datadict)}
                     i+=1;
-                    if(i>=15){break;}
+                    sum += result[key];
                 }
                 window.pie_option['title'][0]['text'] = 'Trending Wiki Entry of '+data
                 window.pie_option['series'][0]['data'] = datalist
@@ -192,6 +260,11 @@
                     if(i>=15){break;}
                 }
                 window.sta_option['dataset']['source'] = datalist
+                window.gau_option['series'][0]['max'] = 10000
+                window.gau_option.series[0].data[0].value = parseInt(sum/1000)
+                if (window.gau_option && typeof window.gau_option === "object") {
+                    gaugeChart.setOption(window.gau_option, true);
+                }
                 if (window.sta_option && typeof window.sta_option === "object") {
                     stackChart.setOption(window.sta_option, true);
                     $("#title").html(data)
@@ -204,11 +277,34 @@
             "/getdata/",
             {"type": "word","data":data},
             function (result) {
-                datalist = []
-                for(key in result){
-                    datalist.push([key,result[key]])
+                datalist = [];
+                var sum = 0;
+                var max = 0;
+                var min = 10000;
+                console.log(window.yeardate)
+                console.log(result)
+                for(date of window.yeardate){
+                    if(typeof(result[date]) !== 'undefined'){
+                        datalist.push([date,result[date]]);
+                        sum += result[date];
+                        if(result[date] > max){
+                            max = result[date]
+                        }else if (result[date] < min){
+                            min = result[date]
+                        }
+                    }else{
+                        console.log(date)
+                        datalist.push([date,-1])
+                    }
+
                 }
                 window.cal_option['series'][0]['data']=datalist
+                window.cal_option['visualMap']['max'] = max/2
+                window.cal_option['visualMap']['min'] = min/1.2
+                window.gau_option.series[0].data[0].value = parseInt(sum/1000)
+                if (window.gau_option && typeof window.gau_option === "object") {
+                    gaugeChart.setOption(window.gau_option, true);
+                }
                 if (window.cal_option && typeof window.cal_option === "object") {
                     calendar.setOption(window.cal_option, true);
                     $("#title").html(data)
@@ -221,10 +317,11 @@
 <body style="margin: 0;padding: 0;background: #888888;">
 <div id="charts" class="display-flex row" style="width:calc(100vw);height: calc(100vh);position:absolute">
 <div id="calendar" class="col-xs-12" style="height:40%;border:2px solid black;">Place Calendar Here</div>
-<div id="pie" class="col-md-5 col-xs-12" style="height:40%;border:2px solid black;float:left">Place Pie Charts Here</div>
-    <div class="col-md-2 col-xs-12" style="height:40%;border:2px solid black;float:left">
-    <div class="col-xs-12" id="title" style="border:2px solid black;">All Year</div>
-    <button id="reset" class="col-md-12" style="border:2px solid silver;" onclick="reset()">Reset</button>
+<div id="pie" class="col-md-4 col-xs-12" style="height:40%;border:2px solid black;float:left">Place Pie Charts Here</div>
+    <div class="col-md-3 col-xs-12" style="height:40%;border:2px solid black;float:left">
+        <div class="col-xs-12" id="title" style="border:2px solid black;">All Year</div>
+        <button id="reset" class="col-md-12" style="border:2px solid silver;" onclick="reset()">Reset</button>
+        <div class="col-xs-12" id="gauge" style="border:2px solid black;height:70%">Place Gauge Here</div>
     </div>
 <div id="stack" class="col-md-5 col-xs-12" style="height:40%;border:2px solid black;float:left">Place Stack Charts Here</div>
 </div>
@@ -243,6 +340,7 @@
                 datalist = []
                 for(key in result){
                     datalist.push([key,result[key]])
+                    window.yeardate.push(key)
                 }
                 window.cal_option['series'][0]['data']=datalist
                 if (window.cal_option && typeof window.cal_option === "object") {
@@ -326,15 +424,50 @@
             })
 
 </script>
+<!--仪表盘-->
 <script>
-    window.onresize = function(){
+    var dom = document.getElementById("gauge");
+    var gaugeChart = echarts.init(dom);
+    var app = {};
+
+    $.post(
+            "/init/",
+            {"type": "date"},
+            function (result) {
+                var sum = 0
+                for(key in result){
+                    sum += result[key]
+                }
+                window.gau_option.series[0].data[0].value = parseInt(sum/1000)
+                if (window.gau_option && typeof window.gau_option === "object") {
+                    gaugeChart.setOption(window.gau_option, true);
+                }
+            })
+
+</script>
+<script>
+    function resize(){
         calendar.resize();
         pieChart.resize();
         stackChart.resize();
-        window.cal_option['calendar'][0]['cellSize'] = $("#calendar").width() / 60
+        gaugeChart.resize();
+        window.cal_option['calendar'][0]['cellSize'] = $("#calendar").width() / 65
+        window.cal_option['visualMap']['itemWidth'] = $("#calendar").width() / 60
+        window.cal_option['visualMap']['itemHeight'] = $("#calendar").width() / 12
         calendar.setOption(window.cal_option, true);
+        $("#calendar").height($("#calendar").width()/5)
+    }
+    window.onresize = function(){
+        resize()
     }
 
-</script>
+    setInterval(function () {
+        resize()
+    }, 10000);
+
+    $(function () {
+        resize()
+    })
+    </script>
 </body>
 </html>
