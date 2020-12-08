@@ -21,22 +21,38 @@
 
     <!--预定义js-->
 <script>
+    var cal_max = 50000000;
+    var cal_min = 500000;
     var yeardate = [];
     var cal_option = {
                     tooltip: {
-                        position: 'top'
+                        position: 'top',
+                        {#formatter: 'date,access<br />{c}'#}
+                        formatter: function (p) {
+                            var format = echarts.format.formatTime('yyyy-MM-dd', p.data[0]);
+                            // return format + ': ' + p.data[1];
+                            if(p.data[1] == -1){return `<b>Not Trending Wiki</b><br />on ${echarts.format.formatTime('yyyy-MM-dd', p.data[0])}`}
+                            else{return `Access：${p.data[1]}<br />Date:  ${echarts.format.formatTime('yyyy-MM-dd', p.data[0])}`};
+                        }
                     },
                     visualMap: {
-                        min: 500000,
-                        max: 5000000,
-                        text:['High','Low'],
-                        calculable: false,
+                        splitNumber: 6,
+                        pieces: [
+                            {min:parseInt(window.cal_max),color:'#2C1F47'},
+                            {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*3/4),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*4/4),color:'#692A6F'},
+                            {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*2/4),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*3/4),color:'#BF406A'},
+                            {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*1/4),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*2/4),color:'#ED8F60'},
+                            {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*0/4),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*1/4),color:'#F0E675'},
+                            {value:-1,label:'Not Trending',color:'#EEEEEE'}
+                        ],
+                        type: 'piecewise',
                         orient: 'horizontal',
                         align: 'bottom',
                         left: 'center',
                         top: 'top',
-                        itemWidth: 18,
-                        itemHeight: 90
+                        textStyle: {
+                            color: '#000'
+                        }
                     },
 
                     calendar: [{
@@ -75,8 +91,31 @@
                     left: 0,
                     right: '10%',
                     top: 0,
-                    bottom: 0
-                }]
+                    bottom: 0,
+
+                }],
+                color: ['rgb(20,22,244)',
+                        {#'rgb(49,28,235)',#}
+                        'rgb(77,33,224)',
+                        {#'rgb(109,39,213)',#}
+                        {#'rgb(136,44,203)',#}
+                        'rgb(164,50,192)',
+                        {#'rgb(173,56,181)',#}
+                        {#'rgb(184,63,170)',#}
+                        'rgb(194,70,160)',
+                        {#'rgb(203,77,150)',#}
+                        {#'rgb(213,83,139)',#}
+                        'rgb(220,89,127)',
+                        {#'rgb(228,97,115)',#}
+                        {#'rgb(234,103,103)',#}
+                        'rgb(241,111,91)'
+                ],
+                label:{color:'rgb(0,0,0)'},
+                animationDelay: function (idx) {
+                    // 越往后的数据延迟越大
+                    return idx * 100;
+                },
+                animationEasingUpdate: "quadraticOut"
             };
     var sta_option = {
                 dataset: {
@@ -107,7 +146,11 @@
                             y: 'keywd'
                         }
                     }
-                ]
+                ],
+                animationEasing: 'elasticInOut',
+                animationDelayUpdate: function (idx) {
+                    return idx * 5;
+                }
             };
     var gau_option = {
         tooltip: {
@@ -148,7 +191,8 @@
                 }
             }
         ],
-
+        animationEasingUpdate: "elasticInOut",
+        animationDurationUpdate: 400
     };
     function reset(){
         $("#title").html("初始化中。。。")
@@ -157,18 +201,29 @@
             {"type": "date"},
             function (result) {
                 var datalist = []
-                var max = 0;
-                var min = 5000000;
+                window.cal_max = 0;
+                window.cal_min = 88888888;
                 for(key in result){
                     datalist.push([key,result[key]])
-                    if(result[key]>max){max=result[key]}
-                    else if(result[key]<min){min=result[key]}
+                    if(result[key]>window.cal_max){window.cal_max=result[key];console.log(window.cal_max)}
+                    else if(result[key]<window.cal_min){window.cal_min=result[key]}
                 }
+                window.cal_max = window.cal_max/2;
+                window.cal_min = window.cal_min;
                 window.cal_option['series'][0]['data']=datalist
-                window.cal_option['visualMap']['max'] = max
-                window.cal_option['visualMap']['min'] = min
+                window.cal_option['visualMap']['pieces'] = [
+                            {min:parseInt(window.cal_max),color:'#2C1F47'},
+                            {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*3/4),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*4/4),color:'#692A6F'},
+                            {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*2/4),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*3/4),color:'#BF406A'},
+                            {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*1/4),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*2/4),color:'#ED8F60'},
+                            {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*0/4),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*1/4),color:'#F0E675'},
+                            {value:-1,label:'Not Trending',color:'#EEEEEE'}
+                        ]
+                {#window.cal_option['visualMap']['max'] = max#}
+                {#window.cal_option['visualMap']['min'] = min#}
                 if (window.cal_option && typeof window.cal_option === "object") {
                     calendar.setOption(window.cal_option, true);
+                    console.log(cal_option)
                 }
             })
         $.post(
@@ -279,18 +334,18 @@
             function (result) {
                 datalist = [];
                 var sum = 0;
-                var max = 0;
-                var min = 10000;
+                window.cal_max = 0;
+                window.cal_min = 88888888;
                 console.log(window.yeardate)
                 console.log(result)
                 for(date of window.yeardate){
                     if(typeof(result[date]) !== 'undefined'){
                         datalist.push([date,result[date]]);
                         sum += result[date];
-                        if(result[date] > max){
-                            max = result[date]
-                        }else if (result[date] < min){
-                            min = result[date]
+                        if(result[date] > window.cal_max){
+                            window.cal_max = result[date]
+                        }else if (result[date] < window.cal_min){
+                            window.cal_min = result[date]
                         }
                     }else{
                         console.log(date)
@@ -298,10 +353,20 @@
                     }
 
                 }
+                window.cal_max = window.cal_max/2;
+                window.cal_min = window.cal_min;
                 window.cal_option['series'][0]['data']=datalist
-                window.cal_option['visualMap']['max'] = max/2
-                window.cal_option['visualMap']['min'] = min/1.2
+                {#window.cal_option['visualMap']['max'] = window.cal_max#}
+                {#window.cal_option['visualMap']['min'] = window.cal_min#}
                 window.gau_option.series[0].data[0].value = parseInt(sum/1000)
+                window.cal_option['visualMap']['pieces'] = [
+                            {min:parseInt(window.cal_max),color:'#2C1F47'},
+                            {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*3/4),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*4/4),color:'#692A6F'},
+                            {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*2/4),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*3/4),color:'#BF406A'},
+                            {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*1/4),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*2/4),color:'#ED8F60'},
+                            {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*0/4),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*1/4),color:'#F0E675'},
+                            {value:-1,label:'Not Trending',color:'#EEEEEE'}
+                        ]
                 if (window.gau_option && typeof window.gau_option === "object") {
                     gaugeChart.setOption(window.gau_option, true);
                 }
@@ -453,7 +518,7 @@
         gaugeChart.resize();
         window.cal_option['calendar'][0]['cellSize'] = $("#calendar").width() / 65
         window.cal_option['visualMap']['itemWidth'] = $("#calendar").width() / 60
-        window.cal_option['visualMap']['itemHeight'] = $("#calendar").width() / 12
+        window.cal_option['visualMap']['itemHeight'] = $("#calendar").width() / 60
         calendar.setOption(window.cal_option, true);
         $("#calendar").height($("#calendar").width()/5)
     }
