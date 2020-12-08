@@ -421,18 +421,33 @@
     }
 </script>
 </head>
-<body style="margin: 0;padding: 0;background: #888888;">
-<div id="charts" class="display-flex row" style="width:calc(100vw);height: calc(100vh);position:absolute">
+<body style="margin: 0;padding: 0;">
+<div id="charts" class="display-flex row" style="width:calc(100vw);height: calc(100vh);position:absolute;">
 <div id="calendar" class="col-xs-12" style="height:40%;border:2px solid black;">Place Calendar Here</div>
-<div id="pie" class="col-md-4 col-xs-12" style="height:40%;border:2px solid black;float:left">Place Pie Charts Here</div>
-    <div class="col-md-3 col-xs-12" style="height:40%;border:2px solid black;float:left">
+<div id="pie" class="col-md-4 col-xs-12" style="height:50%;border:2px solid black;float:left">Place Pie Charts Here</div>
+    <div class="col-md-3 col-xs-12" style="height:50%;border:2px solid black;float:left">
         <div class="col-xs-12" id="title" style="border:2px solid black;">All Year</div>
         <button id="reset" class="col-md-12" style="border:2px solid silver;" onclick="reset()">Reset</button>
         <div class="col-xs-12" id="gauge" style="border:2px solid black;height:70%">Place Gauge Here</div>
     </div>
-<div id="stack" class="col-md-5 col-xs-12" style="height:40%;border:2px solid black;float:left">Place Stack Charts Here</div>
+<div id="stack" class="col-md-5 col-xs-12" style="height:50%;border:2px solid black;float:left">Place Stack Charts Here</div>
 </div>
+<style>
+    body{
+        position:fixed;
+        background:url('https://tvax3.sinaimg.cn/large/b57355e1gy1glgonxpj1xj21hc0u04dh.jpg;');
 
+    }
+    #charts{
+        background: rgba(0,0,0,1);
+        opacity: 0.9;
+        position: absolute;
+        z-index: -1;
+    }
+
+    #charts{
+    }
+</style>
 
 <!--日历图-->
 <script>
