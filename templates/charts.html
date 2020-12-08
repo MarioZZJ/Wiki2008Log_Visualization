@@ -27,47 +27,62 @@
     var sta_min = 500000;
     var yeardate = [];
     var cal_option = {
-                    tooltip: {
-                        position: 'top',
-                        {#formatter: 'date,access<br />{c}'#}
-                        formatter: function (p) {
-                            var format = echarts.format.formatTime('yyyy-MM-dd', p.data[0]);
-                            // return format + ': ' + p.data[1];
-                            if(p.data[1] == -1){return `<b>Not Trending Wiki</b><br />on ${echarts.format.formatTime('yyyy-MM-dd', p.data[0])}`}
-                            else{return `Access：${p.data[1]}<br />Date:  ${echarts.format.formatTime('yyyy-MM-dd', p.data[0])}`};
-                        }
-                    },
-                    visualMap: {
-                        splitNumber: 6,
-                        pieces: [
-                            {min:parseInt(window.cal_max),color:'#2C1F47'},
-                            {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*3/4),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*4/4),color:'#692A6F'},
-                            {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*2/4),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*3/4),color:'#BF406A'},
-                            {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*1/4),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*2/4),color:'#ED8F60'},
-                            {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*0/4),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*1/4),color:'#F0E675'},
-                            {value:-1,label:'Not Trending',color:'#EEEEEE'}
-                        ],
-                        type: 'piecewise',
-                        orient: 'horizontal',
-                        align: 'bottom',
-                        left: 'center',
-                        top: 'top',
-                        textStyle: {
-                            color: '#000'
-                        }
-                    },
+            tooltip: {
+                position: 'top',
+                {#formatter: 'date,access<br />{c}'#}
+                formatter: function (p) {
+                    var format = echarts.format.formatTime('yyyy-MM-dd', p.data[0]);
+                    // return format + ': ' + p.data[1];
+                    if(p.data[1] == -1){return `<b>Not Trending Wiki</b><br />on ${echarts.format.formatTime('yyyy-MM-dd', p.data[0])}`}
+                    else{return `Access：${p.data[1]}<br />Date:  ${echarts.format.formatTime('yyyy-MM-dd', p.data[0])}`};
+                }
+            },
+            visualMap: {
+                splitNumber: 6,
+                pieces: [
+                    {min:parseInt(window.cal_max),color:'#2C1F47'},
+                    {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*5/8),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*8/8),color:'#692A6F'},
+                    {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*3/8),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*5/8),color:'#BF406A'},
+                    {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*1/8),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*3/8),color:'#ED8F60'},
+                    {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*0/8),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*1/8),color:'#F0E675'},
+                    {value:-1,label:'Not Trending',color:'#111111'}
+                ],
+                type: 'piecewise',
+                orient: 'horizontal',
+                align: 'bottom',
+                left: 'center',
+                top: 'top',
+                textStyle: {
+                    color: '#EEEEEE'
+                }
+            },
 
-                    calendar: [{
-                        range: '2008',
-                        cellSize: 18
-                    }],
+            calendar: [{
+                top:'20%',
+                range: '2008',
+                cellSize: 18,
+                dayLabel: {
+                    color: "rgba(255, 255, 255, 1)"
+                },
+                monthLabel: {
+                    color: "rgba(255, 255, 255, 1)",
+                    align: 'left'
+                },
+                splitLine: {
+                  lineStyle: {
+                      color: "rgba(255, 255, 255, 1)",
+                      width: 2.5,
+                      shadowBlur: 2
+                  }
+                }
+            }],
 
-                    series: [{
-                        type: 'heatmap',
-                        coordinateSystem: 'calendar',
-                        calendarIndex: 0,
-                        data: null
-                    }]
+                series: [{
+                    type: 'heatmap',
+                    coordinateSystem: 'calendar',
+                    calendarIndex: 0,
+                    data: null
+                }]
 
                 };
     var pie_option = {
@@ -75,7 +90,12 @@
                     position: 'top'
                 },
                 title: [{
-                    text: 'Trending Wiki Entry of Year 2008'
+                    text: 'Trending Wiki Entry of Year 2008',
+                    textStyle: {
+                      color:'#EEEEEE'
+                    },
+                    left: 'center',
+                    top: 'bottom'
                 }, {
                     subtext: '',
                     left: '10%',
@@ -127,7 +147,7 @@
                     {#    'rgb(255,232,142)'#}
                     {#],#}
                     textShadowColor: 'white',
-                    textShadowBlur:4.5
+                    textShadowBlur:3.5
                 },
                 animationDelay: function (idx) {
                     // 越往后的数据延迟越大
@@ -143,8 +163,27 @@
                     source: null
                 },
                 grid: {containLabel: true},
-                xAxis: {name: 'access_times'},
-                yAxis: {type: 'category'},
+                xAxis: {name: 'access_times',
+                axisLabel: {
+                     textStyle: {
+                         color:  '#EEEEEE' ,
+                     },
+                    formatter: function (value) {
+                         if(value>=1000000){return parseInt(value/1000000)+"M"}
+                         else if(value>=1000){return parseInt(value/1000)+"K"}
+                         else{return parseInt(value)+""}
+                    }
+                }},
+                yAxis: {type: 'category',
+                axisLabel: {
+                     textStyle: {
+                         color:  '#EEEEEE' ,
+                     },
+                    formatter: function (value) {
+                         if(value.length > 20){return value.substring(0,20)+"..."}
+                         else{return value}
+                    }
+                }},
                 visualMap: {
                     orient: 'horizontal',
                     left: 'center',
@@ -244,12 +283,12 @@
                 window.cal_min = window.cal_min;
                 window.cal_option['series'][0]['data']=datalist
                 window.cal_option['visualMap']['pieces'] = [
-                            {min:parseInt(window.cal_max),color:'#2C1F47'},
-                            {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*3/4),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*4/4),color:'#692A6F'},
-                            {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*2/4),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*3/4),color:'#BF406A'},
-                            {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*1/4),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*2/4),color:'#ED8F60'},
-                            {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*0/4),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*1/4),color:'#F0E675'},
-                            {value:-1,label:'Not Trending',color:'#EEEEEE'}
+                        {min:parseInt(window.cal_max+1),color:'#2C1F47'},
+                        {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*5/8+1),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*8/8),color:'#692A6F'},
+                        {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*3/8+1),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*5/8),color:'#BF406A'},
+                        {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*1/8+1),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*3/8),color:'#ED8F60'},
+                        {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*0/8),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*1/8),color:'#F0E675'},
+                        {value:-1,label:'Not Trending',color:'#111111'}
                         ]
                 {#window.cal_option['visualMap']['max'] = max#}
                 {#window.cal_option['visualMap']['min'] = min#}
@@ -402,12 +441,12 @@
                 {#window.cal_option['visualMap']['min'] = window.cal_min#}
                 window.gau_option.series[0].data[0].value = parseInt(sum/1000)
                 window.cal_option['visualMap']['pieces'] = [
-                            {min:parseInt(window.cal_max),color:'#2C1F47'},
-                            {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*3/4),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*4/4),color:'#692A6F'},
-                            {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*2/4),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*3/4),color:'#BF406A'},
-                            {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*1/4),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*2/4),color:'#ED8F60'},
-                            {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*0/4),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*1/4),color:'#F0E675'},
-                            {value:-1,label:'Not Trending',color:'#EEEEEE'}
+                    {min:parseInt(window.cal_max+1),color:'#2C1F47'},
+                    {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*5/8)+1,max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*8/8),color:'#692A6F'},
+                    {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*3/8)+1,max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*5/8),color:'#BF406A'},
+                    {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*1/8)+1,max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*3/8),color:'#ED8F60'},
+                    {min:parseInt(window.cal_min+(window.cal_max-window.cal_min)*0/8),max:parseInt(window.cal_min+(window.cal_max-window.cal_min)*1/8),color:'#F0E675'},
+                    {value:-1,label:'Not Trending',color:'#111111'}
                         ]
                 if (window.gau_option && typeof window.gau_option === "object") {
                     gaugeChart.setOption(window.gau_option, true);
@@ -421,17 +460,23 @@
     }
 </script>
 </head>
-<body style="margin: 0;padding: 0;">
-<div id="charts" class="display-flex row" style="width:calc(100vw);height: calc(100vh);position:absolute;">
+<body style="">
+<div id="charts" class="row" style="width:calc(100vw);height: calc(100vh);overflow: auto;">
 <div id="calendar" class="col-xs-12" style="height:40%;border:2px solid black;">Place Calendar Here</div>
 <div id="pie" class="col-md-4 col-xs-12" style="height:50%;border:2px solid black;float:left">Place Pie Charts Here</div>
-    <div class="col-md-3 col-xs-12" style="height:50%;border:2px solid black;float:left">
-        <div class="col-xs-12" id="title" style="border:2px solid black;">All Year</div>
-        <button id="reset" class="col-md-12" style="border:2px solid silver;" onclick="reset()">Reset</button>
+    <div class="col-md-3 col-xs-12" style="height:52%;border:2px solid black;float:left;text-align:center;">
+        <div class="col-xs-12" id="title" style="border:2px solid black;font-size:20px;color:#EEEEEE">All Year</div>
+        <button id="reset" class="col-md-12 btn btn-warning" style="border:2px solid silver;width:50%;margin-left: 25%;margin-right: 25%;margin-top: 5%;margin-bottom: 8%" onclick="reset()">Reset</button>
         <div class="col-xs-12" id="gauge" style="border:2px solid black;height:70%">Place Gauge Here</div>
     </div>
 <div id="stack" class="col-md-5 col-xs-12" style="height:50%;border:2px solid black;float:left">Place Stack Charts Here</div>
+<div id="footer" class="col-xs-12" style="background: silver;height:10%;float:left;text-align: center;padding:5px">
+            <div class="copyright">&copy;2020 By MarioZZJ</div>
+            <div class="footer_custom_text"><b>Wiki Log 2008 Visualization</b></div>
+            <div class="icp"><a target="_blank" rel="noopener" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=42010602004261"><img class="icp-icon" src="http://blog.mariozzj.cn/img/icp.png" alt="ICP"/><span>鄂公网安备 42010602004261号</span></a></div>
 </div>
+</div>
+
 <style>
     body{
         position:fixed;
@@ -573,9 +618,12 @@
         pieChart.resize();
         stackChart.resize();
         gaugeChart.resize();
-        window.cal_option['calendar'][0]['cellSize'] = $("#calendar").width() / 65
-        window.cal_option['visualMap']['itemWidth'] = $("#calendar").width() / 60
-        window.cal_option['visualMap']['itemHeight'] = $("#calendar").width() / 60
+        window.cal_option['calendar'][0]['width'] = $("#calendar").width() / 1.1
+        window.cal_option['calendar'][0]['height'] = $("#calendar").height() / 1.5
+        window.cal_option['visualMap']['itemWidth'] = $("#calendar").width() / 65
+        window.cal_option['visualMap']['itemHeight'] = $("#calendar").width() / 65
+        if($("#calendar").width()<768){window.cal_option['visualMap']['showLabel'] = false}
+        else{window.cal_option['visualMap']['showLabel'] = true}
         calendar.setOption(window.cal_option, true);
         $("#calendar").height($("#calendar").width()/5)
     }
@@ -589,7 +637,7 @@
 
     $(function () {
         resize()
-        {#reset()#}
+        reset()
     })
     </script>
 </body>
